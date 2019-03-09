@@ -1,4 +1,5 @@
-from flask import Flask, jsonify, request
+from flask import Flask, jsonify, request, Response
+import json
 
 
 app = Flask(__name__)
@@ -23,19 +24,37 @@ def validation(book):
         return True
     else:
         return False
-#Get /Books
+# Get /Books
 
 
 @app.route('/books')
 def get_books():
     return jsonify({'books': books})
 
-#Post /Books
+# Post /Books
 
 
 @app.route('/books', methods=['POST'])
 def add_book():
-    return jsonify(request.get_json())
+    request_data = request.get_json()
+    if(validation(request_data)):
+
+        new_book = {
+            "name": request_data['name'],
+            "price": request_data['price'],
+            "isbn": request_data['isbn']
+        }
+        books.insert(0, new_book)
+        response = Response("", 201, mimetype='application/json')
+        response.headers['Location'] = "/books/" + str(new_book['isbn'])
+        return response
+    else:
+        invalidBook = {
+            "error": "Invalid book object in request",
+            "helpString": "please enter book name,price and isbn"
+        }
+        response = Response(json.dumps(invalidBook), status=400, mimetype='application/json')
+        return response
 
 
 @app.route('/books/<int:isbn>')

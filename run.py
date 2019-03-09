@@ -24,6 +24,13 @@ def validation(book):
         return True
     else:
         return False
+
+
+def updateValidation(book):
+    if ("name" in book and "price" in book):
+        return True
+    else:
+        return False
 # Get /Books
 
 
@@ -55,6 +62,50 @@ def add_book():
         }
         response = Response(json.dumps(invalidBook), status=400, mimetype='application/json')
         return response
+
+
+@app.route('/books/<int:isbn>', methods=['PUT'])
+def replace_book(isbn):
+    request_data = request.get_json()
+    if(not updateValidation(request_data)):
+        invalidBook = {
+            "error": "Invalid book object in request",
+            "helpString": "please enter book name,price and isbn"
+        }
+        response = Response(json.dumps(invalidBook), status=400, mimetype='application/json')
+        return response
+
+    new_book = {
+        'name': request_data['name'],
+        'price': request_data['price'],
+        'isbn': request_data['isbn']
+    }
+
+    i = 0
+    for book in books:
+        curresntIsbn = book['isbn']
+        if curresntIsbn == isbn:
+            books[i] = new_book
+        i += 1
+    response = Response("", status=204)
+    return response
+
+
+@app.route('/books/<int:isbn>', methods=['PATCH'])
+def update_book(isbn):
+    request_data = request.get_json()
+    updated_book = {}
+
+    if('name' in request_data):
+        updated_book['name'] = request_data['name']
+    if("price" in request_data):
+        updated_book['price'] = request_data['price']
+    for book in books:
+        if book["isbn"] == isbn:
+            book.update(updated_book)
+    response = Response("", status=204)
+    response.headers['Location'] = "/books/" + str(isbn)
+    return response
 
 
 @app.route('/books/<int:isbn>')

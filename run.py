@@ -91,6 +91,23 @@ def replace_book(isbn):
     return response
 
 
+@app.route('/books/<int:isbn>', methods=['DELETE'])
+def delete_book(isbn):
+    i = 0
+    for book in books:
+        if book["isbn"] == isbn:
+            books.pop(i)
+            response = Response("", status=204)
+            return response
+        i += 1
+    invalidBook = {
+        "error": "Book ISBN not found",
+        "helpString": "please enter book name,price and isbn"
+    }
+    response = Response(json.dumps(invalidBook), status=404, mimetype='application/json')
+    return response
+
+
 @app.route('/books/<int:isbn>', methods=['PATCH'])
 def update_book(isbn):
     request_data = request.get_json()
